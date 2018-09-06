@@ -1,9 +1,22 @@
 <?xml version="1.0"?>
 
 <addon scheme='2.0'>
-    <id>hello_world</id>
+    <id>sfepay</id>
+    <name>Sfepay</name>
+    <description>Add sfepay payment method</description>
     <version>1.0</version>
-    <name>Hello World</name>
-    <description>Say hello to the world</description>
     <priority>100500</priority>
+    <queries>
+        <item for="install">
+            DELETE FROM `?:payment_descriptions` WHERE `payment_id` in (SELECT `payment_id` FROM `?:payments` WHERE `processor_id` in (SELECT `processor_id` FROM `?:payment_processors` WHERE `addon` = 'sfepay'));
+            DELETE FROM `?:payments` WHERE `processor_id` in (SELECT `processor_id` FROM `?:payment_processors` WHERE `addon` = 'sfepay');
+            DELETE FROM `?:payment_processors` WHERE `addon` = 'sfepay';
+            INSERT INTO `?:payment_processors` (`processor`, `processor_script`, `processor_template`, `admin_template`, `callback`, `type`, `addon`) VALUES ('Sfepay', 'sfepay.php', 'views/orders/components/payments/cc.tpl', 'sfepay.tpl', 'N', 'P', 'sfepay');
+        </item>
+        <item for="uninstall">
+            DELETE FROM `?:payment_descriptions` WHERE `payment_id` in (SELECT `payment_id` FROM `?:payments` WHERE `processor_id` in (SELECT `processor_id` FROM `?:payment_processors` WHERE `addon` = 'sfepay'));
+            DELETE FROM `?:payments` WHERE `processor_id` in (SELECT `processor_id` FROM `?:payment_processors` WHERE `addon` = 'sfepay');
+            DELETE FROM `?:payment_processors` WHERE `addon` = 'sfepay';
+        </item>
+    </queries>
 </addon>
