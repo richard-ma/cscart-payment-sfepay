@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<addon scheme='2.0'>
+    <id>hello_world</id>
+    <version>1.0</version>
+    <name>Hello World</name>
+    <description>Say hello to the world</description>
+    <priority>100500</priority>
+</addon>
