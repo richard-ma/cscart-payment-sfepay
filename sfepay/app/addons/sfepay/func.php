@@ -8,7 +8,7 @@ if (!defined('BOOTSTRAP')) { die('Access denied'); }
 
 function fn_sfepay_install()
 {
-    db_query("INSERT INTO `?:payment_processors` (`processor`, `processor_script`, `processor_template`, `admin_template`, `callback`, `type`, `addon`) VALUES ('Sfepay', 'sfepay.php', 'views/orders/components/payments/cc.tpl', 'sfepay.tpl', 'N', 'P', 'sfepay');");
+    db_query("INSERT INTO `?:payment_processors` (`processor`, `processor_script`, `processor_template`, `admin_template`, `callback`, `type`, `addon`) VALUES ('Sfepay', 'sfepay.php', 'views/orders/components/payments/cc_sfepay.tpl', 'sfepay.tpl', 'N', 'P', 'sfepay');");
 }
 
 function fn_sfepay_uninstall()

@@ -22,7 +22,7 @@ if (defined('PAYMENT_NOTIFICATION')) {
         'cvv2' => $payment_info["cvv2"],
         'month' => $payment_info["expiry_month"],
         'year' => $payment_info["expiry_year"],
-        'cardbank' => '',
+        'cardbank' => $payment_info["card_bank"],
         'BillNo' => $order_info['order_id'],
         'Amount' => $order_info['total'],
         'Currency' => CART_PRIMARY_CURRENCY,
