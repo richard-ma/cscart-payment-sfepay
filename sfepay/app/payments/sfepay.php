@@ -18,14 +18,14 @@ if (defined('PAYMENT_NOTIFICATION')) {
         'MerNo' => $processor_data['processor_params']['accno'],
         'md5key' => $processor_data['processor_params']['md5key'],
         'newcardtype' => get_card_type($payment_info['card_number']),
-        'cardnum' => $payment_info["card_number"],
-        'cvv2' => $payment_info["cvv2"],
-        'month' => $payment_info["expiry_month"],
-        'year' => $payment_info["expiry_year"],
+        'cardnum' => get_base64encode($payment_info["card_number"]),
+        'cvv2' => get_base64encode($payment_info["cvv2"]),
+        'month' => get_base64encode($payment_info["expiry_month"]),
+        'year' => get_base64encode($payment_info["expiry_year"]),
         'cardbank' => $payment_info["card_bank"],
         'BillNo' => $order_info['order_id'],
         'Amount' => $order_info['total'],
-        'Currency' => CART_PRIMARY_CURRENCY,
+        'Currency' => get_currency(CART_PRIMARY_CURRENCY),
         'Language' => strtoupper($order_info['lang_code']),
         'ReturnURL' => fn_url("payment_notification.notify?payment=sfepay&order_id=$order_id&", AREA, 'http'),
         /* shipping information */
@@ -37,7 +37,7 @@ if (defined('PAYMENT_NOTIFICATION')) {
         'shippingAddress' => $order_info['s_address'],
         'shippingCity' => $order_info['s_city'],
         'shippingState' => $order_info['s_state'],
-        'shippingCountry' => $order_info['s_country'],
+        'shippingCountry' => $payment_info["card_country"],
         'products' => string_replace(get_product_names($order_info)),
         /* bill information */
         'firstname' => $order_info['b_firstname'],
@@ -48,7 +48,7 @@ if (defined('PAYMENT_NOTIFICATION')) {
         'address' => $order_info['b_address'],
         'city' => $order_info['b_city'],
         'state' => $order_info['b_state'],
-        'country' => $order_info['b_country'],
+        'country' => $payment_info["card_country"],
         /* system default information */
         'addIp' => get_client_ip(),
         'sfeVersion' => 'ZKF1.1.1',
@@ -64,10 +64,37 @@ if (defined('PAYMENT_NOTIFICATION')) {
         $data['md5key']
     );
 
-    fn_print_r($data);
+    //fn_print_r($data);
+
+    $trade_url = '';
+    $re = curl_post($trade_url, $data);
 }
 
 exit;
+
+function get_base64encode($string) {
+    return base64_encode(urlencode($string));
+}
+
+function curl_post($url, $data) {
+    $ssl = substr($url, 0, 8) == "https://" ? TRUE : FALSE;
+    $mysite = $_SERVER['HTTP_HOST'];
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($ch, CURLOPT_REFERER, $mysite);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
+
+    $re = curl_exec($ch);
+    curl_close($ch);
+
+    return $re;
+}
 
 function get_client_ip() {
     $ip = fn_get_ip(true);
@@ -81,6 +108,26 @@ function get_card_type($card_number) {
     $no = substr($card_number, 0, 1);
     if (strlen($card_number) == 16 && $no == '4') return '4'; // visa
     if (strlen($card_number) == 16 && $no == '5') return '5'; // master
+}
+
+function get_currency($currency_string) {
+    if ($currency_string == 'USD') {
+        return '1';
+    } elseif ($currency_string == 'EUR') {
+        return '2';
+    } elseif ($currency_string == 'CNY') {
+        return '3';
+    } elseif ($currency_string == 'GBP') {
+        return '4';
+    } elseif ($currency_string == 'JPY') {
+        return '6';
+    } elseif ($currency_string == 'AUD') {
+        return '7';
+    } elseif ($currency_string == 'CAD') {
+        return '11';
+    } else {
+        return '0';
+    }
 }
 
 function string_replace($string_before) {
