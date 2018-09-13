@@ -7,7 +7,7 @@ if (defined('PAYMENT_NOTIFICATION')) {
      * Receiving and processing the answer
      * from third-party services and payment systems.
      */
-    fn_print_r('hello');
+    fn_print_r('payment notification response data');
 } else {
     /**
      * Running the necessary logics for payment acceptance
@@ -54,7 +54,7 @@ if (defined('PAYMENT_NOTIFICATION')) {
         'sfeVersion' => 'ZKF1.1.1',
     );
 
-    $data['MD5info'] = md5(
+    $data['MD5info'] = strtoupper(md5(
         $data['MerNo'] . 
         $data['BillNo'] . 
         $data['Currency'] . 
@@ -62,12 +62,15 @@ if (defined('PAYMENT_NOTIFICATION')) {
         $data['Language'] .
         $data['ReturnURL'] .
         $data['md5key']
-    );
+    ));
 
-    //fn_print_r($data);
+    fn_print_r($data);
 
-    $trade_url = '';
+    $trade_url = 'https://www.sfepay.com/directPayment';
     $re = curl_post($trade_url, $data);
+
+    fn_print_r('curl response data');
+    fn_print_r(parse_payment_return_data($re));
 }
 
 exit;
@@ -94,6 +97,18 @@ function curl_post($url, $data) {
     curl_close($ch);
 
     return $re;
+}
+
+function parse_payment_return_data($data_string) {
+    $split_data = explode('&', $data_string);
+
+    $data = array();
+    foreach ($split_data as $pair_string) {
+        list($key, $value) = explode('=', $pair_string);
+        $data[$key] = $value;
+    }
+
+    return $data;
 }
 
 function get_client_ip() {
