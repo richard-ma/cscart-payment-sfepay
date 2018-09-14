@@ -7,7 +7,7 @@ if (defined('PAYMENT_NOTIFICATION')) {
      * Receiving and processing the answer
      * from third-party services and payment systems.
      */
-    fn_print_r('payment notification response data');
+    fn_print_die('payment notification response data');
 } else {
     /**
      * Running the necessary logics for payment acceptance
@@ -25,9 +25,9 @@ if (defined('PAYMENT_NOTIFICATION')) {
         'cardbank' => $payment_info["card_bank"],
         'BillNo' => $order_info['order_id'],
         'Amount' => $order_info['total'],
-        'Currency' => get_currency(CART_PRIMARY_CURRENCY),
+        'Currency' => get_currency_code(CART_PRIMARY_CURRENCY),
         'Language' => strtoupper($order_info['lang_code']),
-        'ReturnURL' => fn_url("payment_notification.notify?payment=sfepay&order_id=$order_id&", AREA, 'http'),
+        'ReturnURL' => fn_url("payment_notification.return?payment=sfepay&order_id=$order_id&security_hash=" . fn_generate_security_hash()),
         /* shipping information */
         'shippingFirstName' => $order_info['s_firstname'],
         'shippingLastName' => $order_info['s_lastname'],
@@ -64,23 +64,49 @@ if (defined('PAYMENT_NOTIFICATION')) {
         $data['md5key']
     ));
 
-    fn_print_r($data);
+    //fn_print_r($data);
 
     $trade_url = 'https://www.sfepay.com/directPayment';
-    $re = curl_post($trade_url, $data);
+    $re = parse_payment_return_data(curl_post($trade_url, $data));
 
-    fn_print_r('curl response data');
-    fn_print_r(parse_payment_return_data($re));
+    //TODO 服务端返回的md5暂时失灵，跳过验证步骤
+    // check_response_data($re, $data['md5key']);
+
+    //fn_print_r($re);
+
+    if ($re['succeed'] == '88' || $re['succeed'] == '19') { // 88成功 19待银行处理
+        $pp_response['order_status'] = 'P';
+        $pp_response['reason_text'] = $re['Result'];
+
+        $order_id = (int)$data['BillNo'];
+        fn_finish_payment($order_id, $pp_response);
+        fn_order_placement_routines('route', $order_id);
+    } else {
+        // 支付失败
+        $pp_response['order_status'] = 'F';
+        $pp_response['reason_text'] = 'The Operation Failed To Pay. [CODE: ' . $re['Succeed'] . ' MESSAGE: ' . $re['Result'] . ']';
+        fn_change_order_status($order_id, $pp_response['order_status']);
+    }
 }
 
-exit;
+function check_response_data($data, $md5key) {
+    $checksum = strtoupper(md5(
+        $data['BillNo'].
+        $data['Currency'].
+        $data['Amount'].
+        $data['Succeed'].
+        $md5key
+    ));
+
+    return $checksum === $data['MD5info'] ? True : False;
+}
 
 function get_base64encode($string) {
     return base64_encode(urlencode($string));
 }
 
 function curl_post($url, $data) {
-    $ssl = substr($url, 0, 8) == "https://" ? TRUE : FALSE;
+    $ssl = substr($url, 0, 8) == "https://" ? True : False;
     $mysite = $_SERVER['HTTP_HOST'];
 
     $ch = curl_init();
@@ -125,7 +151,7 @@ function get_card_type($card_number) {
     if (strlen($card_number) == 16 && $no == '5') return '5'; // master
 }
 
-function get_currency($currency_string) {
+function get_currency_code($currency_string) {
     if ($currency_string == 'USD') {
         return '1';
     } elseif ($currency_string == 'EUR') {
@@ -142,6 +168,26 @@ function get_currency($currency_string) {
         return '11';
     } else {
         return '0';
+    }
+}
+
+function get_currency_string($currency_code) {
+    if ($currency_code == '1') {
+        return 'USD';
+    } elseif ($currency_code == '2') {
+        return 'EUR';
+    } elseif ($currency_code == '3') {
+        return 'CNY';
+    } elseif ($currency_code == '4') {
+        return 'GBP';
+    } elseif ($currency_code == '6') {
+        return 'JPY';
+    } elseif ($currency_code == '7') {
+        return 'AUD';
+    } elseif ($currency_code == '11') {
+        return 'CAD';
+    } else {
+        return 'UNKNOWN';
     }
 }
 
