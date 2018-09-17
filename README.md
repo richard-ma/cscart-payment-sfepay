@@ -38,5 +38,5 @@
         1. 到`/design/themes/[你使用的theme名称]/templates/views/orders/components/payments`下确认是否有cc_sfepay.tpl文件，如果没有，则证明属于该问题，可以使用下面方法解决。
     * 解决步骤
         1. `cd /design/themes/[你使用的theme名称]/templates/views/orders/components/payments`
-        1. `cp /design/themes/refresh/templates/views/orders/components/payments/cc_sfepay.tpl .`
+        1. `cp /design/themes/responsive/templates/views/orders/components/payments/cc_sfepay.tpl .`
         1. `chown www:www cc_sfepay.tpl`
