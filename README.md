@@ -26,3 +26,17 @@
 ## 卸载方法
 * Add-ons -> Manage add-ons -> Sfepay -> Uninstall
 ![](./docs/images/uninstall1.png)
+
+## Trouble Shooting
+
+### 安装后checkout无法显示填写卡号信息等的页面，提示找不到cc_sfepay.tpl文件
+* 问题原因
+    * 由于sfepay插件使用了自定义模板，安装位置设定于默认目录，如果用户安装了其他主题，则该主题不会包含自定义模板，报错显示找不到该模板文件。
+* 解决方案
+    * 确认问题
+        1. 了解当前使用的网站theme名称
+        1. 到`/design/themes/[你使用的theme名称]/templates/views/orders/components/payments`下确认是否有cc_sfepay.tpl文件，如果没有，则证明属于该问题，可以使用下面方法解决。
+    * 解决步骤
+        1. `cd /design/themes/[你使用的theme名称]/templates/views/orders/components/payments`
+        1. `cp /design/themes/refresh/templates/views/orders/components/payments/cc_sfepay.tpl .`
+        1. `chown www:www cc_sfepay.tpl`
