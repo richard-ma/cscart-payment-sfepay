@@ -200,7 +200,7 @@
 					<option value="TCATC">Turks and Caicos Islands</option>
 					<option value="UGAUG">Uganda</option>
 					<option value="UKRUA">Ukraine</option>
-					<option value="USAUS">United States</option>
+					<option value="USAUS" selected>United States</option>
 					<option value="URYUY">Uruguay</option>
 					<option value="UZBUZ">Uzbekistan</option>
 					<option value="VENVE">Venezuela</option>
