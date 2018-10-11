@@ -30,7 +30,7 @@
             </div>
     
             <div class="ty-credit-card__control-group ty-control-group">
-                <label for="credit_card_name_{$id_suffix}" class="ty-control-group__title cm-required">Card Bank</label>
+                <label for="credit_card_name_{$id_suffix}" class="ty-control-group__title cm-required">Credit Card Bank</label>
                 <input size="35" type="text" id="credit_card_name_{$id_suffix}" name="payment_info[card_bank]" value="" class="cm-cc-name ty-credit-card__input" />
             </div>
     
