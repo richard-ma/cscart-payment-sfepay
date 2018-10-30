@@ -36,7 +36,7 @@ if (defined('PAYMENT_NOTIFICATION')) {
         'shippingZipcode' => $order_info['s_zipcode'],
         'shippingAddress' => $order_info['s_address'],
         'shippingCity' => $order_info['s_city'],
-        'shippingState' => $order_info['s_state'],
+        'shippingSstate' => $order_info['s_state'],
         'shippingCountry' => $payment_info["card_country"],
         'products' => string_replace(get_product_names($order_info)),
         /* bill information */
