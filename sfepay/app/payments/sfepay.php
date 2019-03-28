@@ -15,18 +15,18 @@ if (defined('PAYMENT_NOTIFICATION')) {
      */
     $data = array(
         /* basic information */
-        'MerNo' => $processor_data['processor_params']['accno'],
+        'merNo' => $processor_data['processor_params']['accno'],
         'md5key' => $processor_data['processor_params']['md5key'],
-        'newcardtype' => get_card_type($payment_info['card_number']),
-        'cardnum' => get_base64encode($payment_info["card_number"]),
+        'cardtype' => get_card_type($payment_info['card_number']),
+        'cardNo' => get_base64encode($payment_info["card_number"]),
         'cvv2' => get_base64encode($payment_info["cvv2"]),
         'month' => get_base64encode($payment_info["expiry_month"]),
         'year' => get_base64encode($payment_info["expiry_year"]),
-        'cardbank' => $payment_info["card_bank"],
-        'BillNo' => $order_info['order_id'],
+        'cardBank' => $payment_info["card_bank"],
+        'merchantOrderNo' => $order_info['order_id'],
         'Amount' => $order_info['total'],
         'Currency' => get_currency_code(CART_PRIMARY_CURRENCY),
-        'Language' => strtoupper($order_info['lang_code']),
+        //'Language' => strtoupper($order_info['lang_code']),
         'ReturnURL' => fn_url("payment_notification.return?payment=sfepay&order_id=$order_id&security_hash=" . fn_generate_security_hash()),
         /* shipping information */
         'shippingFirstName' => $order_info['s_firstname'],
@@ -50,23 +50,25 @@ if (defined('PAYMENT_NOTIFICATION')) {
         'state' => $order_info['b_state'],
         'country' => $payment_info["card_country"],
         /* system default information */
-        'addIp' => get_client_ip(),
-        'sfeVersion' => 'ZKF1.1.1',
+        'ip' => get_client_ip(),
+        //'tradeAdd' => Registry::get('config.current_host'),
+        'tradeAdd' => $_SERVER['SERVER_NAME'],
+        //'sfeVersion' => 'ZKF1.1.1',
     );
 
     $data['MD5info'] = strtoupper(md5(
-        $data['MerNo'] . 
-        $data['BillNo'] . 
+        $data['merNo'] . 
+        $data['merchantOrderNo'] . 
         $data['Currency'] . 
         $data['Amount'] . 
-        $data['Language'] .
-        $data['ReturnURL'] .
+        //$data['Language'] .
+        //$data['ReturnURL'] .
         $data['md5key']
     ));
 
     //fn_print_r($data);
 
-    $trade_url = 'https://www.sfepay.com/directPayment';
+    $trade_url = 'https://www.sfepay.com/spay';
     $re = parse_payment_return_data(curl_post($trade_url, $data));
 
     //TODO 服务端返回的md5暂时失灵，跳过验证步骤
@@ -74,25 +76,25 @@ if (defined('PAYMENT_NOTIFICATION')) {
 
     //fn_print_r($re);
 
-    if ($re['Succeed'] == '88' || $re['Succeed'] == '19') { // 88成功 19待银行处理
+    if ($re['succeed'] == '88' || $re['succeed'] == '19') { // 88成功 19待银行处理
         $pp_response['order_status'] = 'P';
         $pp_response['reason_text'] = $re['Result'];
 
-        $order_id = (int)$data['BillNo'];
+        $order_id = (int)$data['merchantOrderNo'];
         fn_finish_payment($order_id, $pp_response);
         fn_order_placement_routines('route', $order_id);
     } else {
         // 支付失败
         $pp_response['order_status'] = 'F';
-        $pp_response['reason_text'] = 'The Operation Failed To Pay. [CODE: ' . $re['Succeed'] . ' MESSAGE: ' . $re['Result'] . ']';
+        $pp_response['reason_text'] = 'The Operation Failed To Pay. [CODE: ' . $re['Succeed'] . ' MESSAGE: ' . $re['remark'] . ']';
         fn_change_order_status($order_id, $pp_response['order_status']);
     }
 }
 
 function check_response_data($data, $md5key) {
     $checksum = strtoupper(md5(
-        $data['BillNo'].
-        $data['Currency'].
+        $data['merchantOrderNo'].
+        //$data['Currency'].
         $data['Amount'].
         $data['Succeed'].
         $md5key
