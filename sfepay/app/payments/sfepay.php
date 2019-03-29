@@ -17,7 +17,7 @@ if (defined('PAYMENT_NOTIFICATION')) {
         /* basic information */
         'merNo' => $processor_data['processor_params']['accno'],
         'md5key' => $processor_data['processor_params']['md5key'],
-        'cardtype' => get_card_type($payment_info['card_number']),
+        'cartype' => get_card_type($payment_info['card_number']),
         'cardNo' => get_base64encode($payment_info["card_number"]),
         'cvv2' => get_base64encode($payment_info["cvv2"]),
         'month' => get_base64encode($payment_info["expiry_month"]),
