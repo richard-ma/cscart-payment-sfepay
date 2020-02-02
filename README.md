@@ -46,5 +46,5 @@
     * 自定义的支付页面模板与编辑订单模板不兼容导致
 * 解决方案
     * 打开/app/controllers/backend/order_management.php文件
-    * 在行首添加//，改成下图所示
+    * 在425行首添加//，改成下图所示
 ![](./docs/images/bugfix1-1.png)
