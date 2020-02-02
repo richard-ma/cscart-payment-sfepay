@@ -40,3 +40,11 @@
         1. `cd /design/themes/[你使用的theme名称]/templates/views/orders/components/payments`
         1. `cp /design/themes/responsive/templates/views/orders/components/payments/cc_sfepay.tpl .`
         1. `chown www:www cc_sfepay.tpl`
+
+### 安装后使用该支付方式支付的订单无法编辑
+* 问题原因
+    * 自定义的支付页面模板与编辑订单模板不兼容导致
+* 解决方案
+    * 打开/app/controllers/backend/order_management.php文件
+    * 在行首添加//，改成下图所示
+![](./docs/images/bugfix1-1.png)
